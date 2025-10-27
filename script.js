@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DATA STRUCTURE: TRIE (PREFIX TREE) ---
     class TrieNode {
         constructor() {
-            // Hash Map for children
             this.children = {};
             this.isEndOfWord = false;
         }
@@ -32,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentNode = this.root;
             for (const char of prefix) {
                 if (!currentNode.children[char]) {
-                    return []; // No suggestions
+                    return [];
                 }
                 currentNode = currentNode.children[char];
             }
@@ -140,14 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal(alertModal);
     }
     
-    function showPaymentSimulation(title, callback) {
-        document.getElementById('payment-title').textContent = title;
-        openModal(paymentModal);
-        setTimeout(() => {
-            closeModal(paymentModal);
-            if(callback) callback();
-        }, 2500); // Simulate 2.5 second payment processing
-    }
+    // REMOVED: showPaymentSimulation function is no longer needed.
 
     // --- API CALLS & RENDERING ---
     async function fetchListings() {
@@ -297,46 +289,44 @@ document.addEventListener('DOMContentLoaded', () => {
     findPassesHeroBtn.onclick = handleBuyButtonClick;
 
     // Sell Pass Form
-    sellPassForm.addEventListener('submit', (e) => {
+    sellPassForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const callback = async () => {
-            const formData = {
-                eventName: document.getElementById('event-name').value,
-                city: document.getElementById('city').value,
-                passType: document.getElementById('pass-type').value,
-                price: document.getElementById('price').value,
-                date: document.getElementById('date').value,
-                sellerId: currentUser.userId,
-                contactInfo: (await (await fetch(`${API_URL}/api/users/${currentUser.userId}`)).json()).phoneNumbers[0] // Simplified, assumes one phone number
-            };
-
-            // In a real app, you would get the seller's contact info securely
-            const userResponse = await fetch(`${API_URL}/api/users/${currentUser.userId}`);
-            const userData = await userResponse.json();
-            formData.contactInfo = userData.phoneNumbers[0] || 'Not Available';
-
-            try {
-                const response = await fetch(`${API_URL}/api/listings`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                if (!response.ok) throw new Error('Failed to create listing.');
-                
-                closeModal(sellPassModal);
-                sellPassForm.reset();
-                showAlert('Success!', 'Your pass has been listed.');
-                fetchListings(); // Refresh list
-                fetchEventNamesForTrie(); // Refresh Trie
-            } catch (error) {
-                showAlert('Error', error.message);
-            }
+        // CHANGED: Removed payment simulation. Logic now runs instantly.
+        const formData = {
+            eventName: document.getElementById('event-name').value,
+            city: document.getElementById('city').value,
+            passType: document.getElementById('pass-type').value,
+            price: document.getElementById('price').value,
+            date: document.getElementById('date').value,
+            sellerId: currentUser.userId,
+            contactInfo: '' // We will fetch this next
         };
-        showPaymentSimulation('Processing $25 Listing Fee', callback);
+
+        try {
+            // In a real app, this info should be fetched more securely or from the login response.
+            // For now, we assume a simple user model where the first phone number is used.
+            const userResponse = await (await fetch(`${API_URL}/api/users/${currentUser.userId}`)).json();
+            formData.contactInfo = userResponse.phoneNumbers[0] || 'Not Available';
+            
+            const response = await fetch(`${API_URL}/api/listings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (!response.ok) throw new Error('Failed to create listing.');
+            
+            closeModal(sellPassModal);
+            sellPassForm.reset();
+            showAlert('Success!', 'Your pass has been listed.');
+            fetchListings(); // Refresh list
+            fetchEventNamesForTrie(); // Refresh Trie
+        } catch (error) {
+            showAlert('Error', error.message);
+        }
     });
 
     // Buy Button on Cards
-    listingsGrid.addEventListener('click', (e) => {
+    listingsGrid.addEventListener('click', async (e) => {
         if (e.target.classList.contains('buy-btn')) {
             if (!currentUser) {
                 showAlert('Login Required', 'Please log in to purchase a pass.');
@@ -345,22 +335,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const listingId = e.target.dataset.id;
-            const callback = async () => {
-                 try {
-                    const response = await fetch(`${API_URL}/api/listings/${listingId}/purchase`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: currentUser.userId })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    
-                    showAlert('Purchase Complete!', `Seller's Contact: ${data.contactInfo}`);
-                } catch (error) {
-                    showAlert('Error', error.message);
-                }
-            };
-            showPaymentSimulation('Processing $10 Viewing Fee', callback);
+            // CHANGED: Removed payment simulation. Logic now runs instantly.
+             try {
+                const response = await fetch(`${API_URL}/api/listings/${listingId}/purchase`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser.userId })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                
+                showAlert('Purchase Complete!', `Seller's Contact: ${data.contactInfo}`);
+            } catch (error) {
+                showAlert('Error', error.message);
+            }
         }
     });
 
@@ -407,18 +395,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    document.getElementById('my-listings-content').addEventListener('click', (e) => {
+    document.getElementById('my-listings-content').addEventListener('click', async (e) => {
         const listingId = e.target.dataset.id;
         if (!listingId) return;
 
         if (e.target.classList.contains('boost-btn')) {
-            const callback = async () => {
+            // CHANGED: Removed payment simulation. Logic now runs instantly.
+            try {
                 await fetch(`${API_URL}/api/listings/${listingId}/boost`, { method: 'POST' });
                 showAlert('Success', 'Your listing has been boosted!');
                 closeModal(myListingsModal);
                 fetchListings(); // Refresh main view
-            };
-            showPaymentSimulation('Processing $10 Boost Fee', callback);
+            } catch (error) {
+                showAlert('Error', 'Failed to boost your listing.');
+            }
         } else if (e.target.classList.contains('sold-btn')) {
             const markAsSold = async () => {
                 await fetch(`${API_URL}/api/listings/${listingId}/mark-sold`, { method: 'POST' });
