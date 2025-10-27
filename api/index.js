@@ -245,6 +245,19 @@ app.get('/api/events', async (req, res) => {
     }
 });
 
+// Get a single user's public info
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('username phoneNumbers');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user data', error });
+    }
+});
+
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 3001;
