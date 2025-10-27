@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GarbaPass Exchange</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">GarbaPass</div>
+            <div class="nav-links">
+                <button class="nav-button" id="buy-tickets-nav-btn">Buy Passes</button>
+                <button class="nav-button" id="sell-tickets-nav-btn">Sell Passes</button>
+            </div>
+            <div class="user-actions">
+                <div id="guest-view">
+                    <button class="nav-button" id="login-btn">Login</button>
+                    <button class="nav-button primary" id="signup-btn">Sign Up</button>
+                </div>
+                <div id="user-view" style="display: none;">
+                    <span id="welcome-message"></span>
+                    <button class="nav-button" id="my-listings-btn">My Listings</button>
+                    <button class="nav-button" id="logout-btn">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Your Marketplace for Navaratri Garba Passes</h1>
+            <p>Buy and sell verified passes for the most popular events. Peer-to-peer, simple, and secure.</p>
+            <div class="hero-buttons">
+                <button class="hero-btn primary" id="find-passes-hero-btn">Find Passes</button>
+                <button class="hero-btn" id="sell-passes-hero-btn">Sell Passes</button>
+            </div>
+        </section>
+
+        <section id="listings-section" class="listings-container">
+            <h2>Find Your Perfect Pass</h2>
+            <div class="filter-controls">
+                <div class="search-container">
+                     <input type="text" id="event-name-search" placeholder="Search by Event Name...">
+                     <div id="autocomplete-suggestions" class="suggestions-box"></div>
+                </div>
+                <select id="city-filter">
+                    <option value="">All Cities</option>
+                    <option value="Ahmedabad">Ahmedabad</option>
+                    <option value="Vadodara">Vadodara</option>
+                    <option value="Surat">Surat</option>
+                    <option value="Rajkot">Rajkot</option>
+                </select>
+                <select id="pass-type-filter">
+                    <option value="">All Pass Types</option>
+                    <option value="Single">Single</option>
+                    <option value="Couple">Couple</option>
+                    <option value="Group">Group</option>
+                </select>
+                <input type="date" id="date-filter">
+                <button id="apply-filters-btn">Apply</button>
+                <button id="reset-filters-btn">Reset</button>
+            </div>
+            <div id="listings-grid" class="grid-container">
+                </div>
+        </section>
+    </main>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+                <p id="login-error" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <input type="text" id="signup-username" placeholder="Username" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <input type="tel" id="signup-phone" placeholder="Phone Number" required>
+                <button type="submit">Sign Up</button>
+                 <p id="signup-error" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="sell-pass-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Sell Your Pass</h2>
+            <form id="sell-pass-form">
+                <input type="text" id="event-name" placeholder="Event Name" required>
+                <select id="city" required>
+                    <option value="" disabled selected>Select City</option>
+                    <option value="Ahmedabad">Ahmedabad</option>
+                    <option value="Vadodara">Vadodara</option>
+                    <option value="Surat">Surat</option>
+                    <option value="Rajkot">Rajkot</option>
+                </select>
+                <select id="pass-type" required>
+                    <option value="" disabled selected>Select Pass Type</option>
+                    <option value="Single">Single Pass</option>
+                    <option value="Couple">Couple Pass</option>
+                    <option value="Group">Group Pass</option>
+                </select>
+                <input type="number" id="price" placeholder="Price ($)" required>
+                <input type="date" id="date" required>
+                <p>A $25 fee will be charged to list this pass.</p>
+                <button type="submit">Proceed to Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="my-listings-modal" class="modal">
+        <div class="modal-content wide">
+            <span class="close-btn">&times;</span>
+            <h2>My Listings</h2>
+            <div id="my-listings-content">
+                </div>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="alert-title">Alert</h2>
+            <p id="alert-message"></p>
+            <button id="alert-ok-btn">OK</button>
+        </div>
+    </div>
+
+     <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="payment-title">Processing Payment</h2>
+            <p id="payment-message">Please wait...</p>
+            <div class="loader"></div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

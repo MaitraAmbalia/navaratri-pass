@@ -1,0 +1,428 @@
+/* style.css */
+:root {
+    --primary-color: #FF6B6B;
+    --secondary-color: #4ECDC4;
+    --background-color: #F7FFF7;
+    --text-color: #1A535C;
+    --card-bg: #FFFFFF;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --font-family: 'Poppins', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+    padding: 1rem 5%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.nav-links, .user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-button {
+    background: none;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+    background-color: var(--text-color);
+    color: var(--card-bg);
+}
+
+.nav-button.primary, .hero-btn.primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+.nav-button.primary:hover, .hero-btn.primary:hover {
+    background-color: #e65252;
+}
+
+
+#user-view {
+    align-items: center;
+    gap: 1rem;
+}
+
+#welcome-message {
+    font-weight: 600;
+}
+
+.hero {
+    text-align: center;
+    padding: 5rem 1rem;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1568837255955-802a24f5a3a9?q=80&w=2070') center/cover no-repeat;
+    color: white;
+}
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+.hero-btn {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1rem;
+    border-radius: 25px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.hero-btn:hover {
+    background-color: white;
+    color: var(--text-color);
+}
+
+
+.listings-container {
+    padding: 2rem 5%;
+}
+
+.listings-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+}
+
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+.filter-controls input, .filter-controls select {
+    padding: 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    min-width: 180px;
+}
+.filter-controls button {
+    padding: 0.7rem 1.5rem;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+.filter-controls button:hover {
+    background-color: #3ababa;
+}
+.filter-controls button#reset-filters-btn {
+    background-color: #aaa;
+}
+.filter-controls button#reset-filters-btn:hover {
+    background-color: #888;
+}
+
+.search-container {
+    position: relative;
+}
+
+.suggestions-box {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.suggestions-box div {
+    padding: 10px;
+    cursor: pointer;
+}
+.suggestions-box div:hover {
+    background-color: #f0f0f0;
+}
+
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.listing-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.listing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+.listing-card.boosted {
+    border: 2px solid var(--primary-color);
+}
+.boosted .boost-banner {
+    display: block;
+}
+
+.boost-banner {
+    display: none;
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.card-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.card-info {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+.card-info span {
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.card-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+.card-btn:hover {
+    background-color: #3ababa;
+}
+
+/* MODAL STYLES */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+    animation: slide-down 0.4s ease-out;
+}
+
+.modal-content.wide {
+    max-width: 800px;
+}
+
+@keyframes slide-down {
+    from { top: -100px; opacity: 0; }
+    to { top: 0; opacity: 1; }
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-btn:hover {
+    color: black;
+}
+
+.modal-content h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.modal-content input, .modal-content select {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.modal-content button {
+    padding: 0.8rem;
+    font-size: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+.error-message {
+    color: red;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+#alert-ok-btn {
+    background-color: var(--secondary-color);
+}
+
+/* My Listings Modal Content */
+#my-listings-content {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.my-listing-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+.my-listing-item:last-child {
+    border-bottom: none;
+}
+.my-listing-item.sold {
+    opacity: 0.6;
+    background-color: #f9f9f9;
+}
+.my-listing-info h4 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.my-listing-info p {
+    margin: 0;
+    color: #666;
+}
+.my-listing-actions button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+.my-listing-actions button.boost-btn {
+    background-color: var(--secondary-color);
+}
+.my-listing-actions button.sold-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+.my-listing-actions button.boosted-btn {
+    background-color: var(--primary-color);
+    cursor: not-allowed;
+}
+
+/* Loader for payment */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid var(--primary-color);
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
