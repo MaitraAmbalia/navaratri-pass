@@ -138,8 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('alert-message').textContent = message;
         openModal(alertModal);
     }
-    
-    // REMOVED: showPaymentSimulation function is no longer needed.
 
     // --- API CALLS & RENDERING ---
     async function fetchListings() {
@@ -400,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!listingId) return;
 
         if (e.target.classList.contains('boost-btn')) {
-            // CHANGED: Removed payment simulation. Logic now runs instantly.
             try {
                 await fetch(`${API_URL}/api/listings/${listingId}/boost`, { method: 'POST' });
                 showAlert('Success', 'Your listing has been boosted!');
