@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span><strong>Seller:</strong> ${listing.seller.username}</span>
                     </div>
                     <div class="card-footer">
-                        <span class="price">$${listing.price}</span>
+                        <span class="price">₹${listing.price}</span>
                         <button class="card-btn buy-btn" data-id="${listing._id}">View Contact ($10)</button>
                     </div>
                 </div>
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const listingId = e.target.dataset.id;
-            // CHANGED: Removed payment simulation. Logic now runs instantly.
+            
              try {
                 const response = await fetch(`${API_URL}/api/listings/${listingId}/purchase`, {
                     method: 'POST',
