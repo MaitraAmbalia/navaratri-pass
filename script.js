@@ -53,6 +53,140 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const eventTrie = new Trie();
 
+    // --- DATA STRUCTURE: MIN HEAP (FOR LOWEST PRICE SORTING) ---
+    class MinHeap {
+        constructor() {
+            this.heap = [];
+        }
+
+        insert(node) {
+            this.heap.push(node);
+            this.bubbleUp();
+        }
+
+        bubbleUp() {
+            let index = this.heap.length - 1;
+            while (index > 0) {
+                let element = this.heap[index];
+                let parentIndex = Math.floor((index - 1) / 2);
+                let parent = this.heap[parentIndex];
+
+                if (parent.price <= element.price) break;
+
+                this.heap[index] = parent;
+                this.heap[parentIndex] = element;
+                index = parentIndex;
+            }
+        }
+
+        extractMin() {
+            const min = this.heap[0];
+            const end = this.heap.pop();
+            if (this.heap.length > 0) {
+                this.heap[0] = end;
+                this.sinkDown();
+            }
+            return min;
+        }
+
+        sinkDown() {
+            let index = 0;
+            const length = this.heap.length;
+            const element = this.heap[0];
+
+            while (true) {
+                let leftChildIndex = 2 * index + 1;
+                let rightChildIndex = 2 * index + 2;
+                let leftChild, rightChild;
+                let swap = null;
+
+                if (leftChildIndex < length) {
+                    leftChild = this.heap[leftChildIndex];
+                    if (leftChild.price < element.price) {
+                        swap = leftChildIndex;
+                    }
+                }
+
+                if (rightChildIndex < length) {
+                    rightChild = this.heap[rightChildIndex];
+                    if ((swap === null && rightChild.price < element.price) ||
+                        (swap !== null && rightChild.price < leftChild.price)) {
+                        swap = rightChildIndex;
+                    }
+                }
+
+                if (swap === null) break;
+
+                this.heap[index] = this.heap[swap];
+                this.heap[swap] = element;
+                index = swap;
+            }
+        }
+        
+        isEmpty() {
+            return this.heap.length === 0;
+        }
+    }
+
+    // --- DATA STRUCTURE: QUEUE (FOR RECENT SEARCHES) ---
+    class Queue {
+        constructor(maxSize = 5) {
+            this.items = [];
+            this.maxSize = maxSize;
+        }
+
+        enqueue(element) { // Add to back
+            // Remove if it already exists to put it at the end
+            this.items = this.items.filter(item => item !== element);
+            this.items.push(element);
+            if (this.items.length > this.maxSize) {
+                this.dequeue();
+            }
+            this.saveToStorage();
+            this.render();
+        }
+
+        dequeue() { // Remove from front
+            return this.items.shift();
+        }
+
+        saveToStorage() {
+            localStorage.setItem('recentSearches', JSON.stringify(this.items));
+        }
+
+        loadFromStorage() {
+            const stored = localStorage.getItem('recentSearches');
+            if (stored) {
+                this.items = JSON.parse(stored);
+                this.render();
+            }
+        }
+
+        render() {
+            const container = document.getElementById('recent-searches-container');
+            container.innerHTML = '';
+            if (this.items.length === 0) {
+                container.innerHTML = '<span style="color: #888; font-size: 0.9rem;">None</span>';
+                return;
+            }
+            // Reverse to show most recent first
+            const recentFirst = [...this.items].reverse();
+            recentFirst.forEach(search => {
+                const chip = document.createElement('div');
+                chip.className = 'recent-search-chip';
+                chip.textContent = search;
+                chip.onclick = () => {
+                    document.getElementById('event-name-search').value = search;
+                    fetchListings();
+                };
+                container.appendChild(chip);
+            });
+        }
+    }
+
+    const recentSearchesQueue = new Queue(5);
+    recentSearchesQueue.loadFromStorage();
+
     // --- DOM ELEMENTS ---
     const listingsGrid = document.getElementById('listings-grid');
     const guestView = document.getElementById('guest-view');
@@ -83,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const myListingsBtn = document.getElementById('my-listings-btn');
     const applyFiltersBtn = document.getElementById('apply-filters-btn');
     const resetFiltersBtn = document.getElementById('reset-filters-btn');
+    const sortFilter = document.getElementById('sort-filter');
 
     // Search & Autocomplete
     const searchInput = document.getElementById('event-name-search');
@@ -91,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- STATE MANAGEMENT ---
     let currentUser = null;
+    let currentRenderedListingIds = ""; // Used to track what's currently on screen
 
     function checkLoginStatus() {
         const user = localStorage.getItem('currentUser');
@@ -140,11 +276,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- API CALLS & RENDERING ---
-    async function fetchListings() {
+    function renderSkeletons() {
+        listingsGrid.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const skeleton = document.createElement('div');
+            skeleton.className = 'skeleton-card';
+            skeleton.innerHTML = `
+                <div class="skeleton-title skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-text skeleton"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-price skeleton"></div>
+                    <div class="skeleton-btn skeleton"></div>
+                </div>
+            `;
+            listingsGrid.appendChild(skeleton);
+        }
+    }
+
+    async function fetchListings(isBackground = false) {
+        if (!isBackground) {
+            renderSkeletons(); // Only show skeletons on the initial/manual load
+        }
+
         const city = document.getElementById('city-filter').value;
         const passType = document.getElementById('pass-type-filter').value;
         const date = document.getElementById('date-filter').value;
         const eventName = searchInput.value;
+
+        if (!isBackground && eventName && eventName.trim() !== "") {
+            recentSearchesQueue.enqueue(eventName.trim());
+        }
 
         let query = new URLSearchParams();
         if (city) query.append('city', city);
@@ -154,11 +317,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch(`${API_URL}/api/listings?${query.toString()}`);
-            const listings = await response.json();
-            renderListings(listings);
+            let listings = await response.json();
+            
+            // Check sorting
+            if (sortFilter.value === 'price-asc') {
+                const heap = new MinHeap();
+                listings.forEach(listing => heap.insert(listing));
+                
+                const sortedListings = [];
+                while (!heap.isEmpty()) {
+                    sortedListings.push(heap.extractMin());
+                }
+                listings = sortedListings;
+            }
+
+            // Real-Time Diffing: Only Re-render if the listings have actually changed.
+            // We create a string of IDs + sold/boosted toggles to represent the state uniquely.
+            const newListingIds = listings.map(l => `${l._id}-${l.isSold}-${l.isBoosted}`).join(',');
+            
+            if (currentRenderedListingIds !== newListingIds) {
+                renderListings(listings);
+                currentRenderedListingIds = newListingIds;
+            }
+
         } catch (error) {
             console.error('Error fetching listings:', error);
-            listingsGrid.innerHTML = '<p>Could not fetch listings. Please try again later.</p>';
+            if (!isBackground) {
+                listingsGrid.innerHTML = '<p>Could not fetch listings. Please try again later.</p>';
+            }
         }
     }
 
@@ -424,8 +610,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pass-type-filter').value = '';
         document.getElementById('date-filter').value = '';
         searchInput.value = '';
+        sortFilter.value = '';
         fetchListings();
     };
+
+    sortFilter.addEventListener('change', fetchListings);
 
     searchInput.addEventListener('input', () => {
         const prefix = searchInput.value.toLowerCase();
@@ -464,4 +653,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkLoginStatus();
     fetchListings();
     fetchEventNamesForTrie();
+    
+    // Start Short Polling for Real-Time UI (fetches every 10 seconds)
+    setInterval(() => {
+        fetchListings(true); 
+    }, 10000); 
 });
