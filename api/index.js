@@ -1,4 +1,4 @@
-// api/index.js
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,13 +9,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/navaratriPasses')
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-
-// --- MONGOOSE SCHEMAS ---
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -40,7 +37,6 @@ const ListingSchema = new mongoose.Schema({
 const User = mongoose.model('User', UserSchema);
 const Listing = mongoose.model('Listing', ListingSchema);
 
-// --- DATA STRUCTURE: PRIORITY QUEUE (MAX-HEAP) ---
 class PriorityQueue {
     constructor() {
         this.heap = [];
@@ -55,10 +51,8 @@ class PriorityQueue {
     }
 
     getPriority(item) {
-        // Boosted items get priority 1, others get 0. Higher is better.
-        // We add creation time to sort newer items first among same-priority items.
         const priority = item.isBoosted ? 1 : 0;
-        return priority * 1e14 + new Date(item.createdAt).getTime(); // Combine priority and time
+        return priority * 1e14 + new Date(item.createdAt).getTime();
     }
 
     insert(item) {
@@ -99,12 +93,7 @@ class PriorityQueue {
     isEmpty() {
         return this.heap.length === 0;
     }
-}
 
-
-// --- API ROUTES ---
-
-// User Registration
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password, phoneNumber } = req.body;
@@ -117,7 +106,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// User Login
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -125,15 +113,12 @@ app.post('/api/login', async (req, res) => {
         if (!user || !await bcrypt.compare(password, user.password)) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        // In a real app, you'd return a JWT token here.
-        // For this project, we'll return a simple object.
         res.status(200).json({ message: 'Login successful', userId: user._id, username: user.username });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error });
     }
 });
 
-// Create a new Listing
 app.post('/api/listings', async (req, res) => {
     try {
         const { eventName, city, passType, price, date, sellerId, contactInfo } = req.body;
@@ -148,10 +133,8 @@ app.post('/api/listings', async (req, res) => {
     }
 });
 
-// Get all available listings with filtering and sorting
 app.get('/api/listings', async (req, res) => {
     try {
-        // Hash Table is used here implicitly to build the filter query object
         const filters = {};
         if (req.query.city) filters.city = req.query.city;
         if (req.query.passType) filters.passType = req.query.passType;
@@ -166,11 +149,10 @@ app.get('/api/listings', async (req, res) => {
             filters.eventName = { $regex: req.query.eventName, $options: 'i' };
         }
         
-        filters.isSold = false; // Only fetch listings that are not sold
+        filters.isSold = false;
 
         const listings = await Listing.find(filters).populate('seller', 'username');
 
-        // Use Priority Queue to sort
         const pq = new PriorityQueue();
         listings.forEach(listing => pq.insert(listing));
         
@@ -185,7 +167,6 @@ app.get('/api/listings', async (req, res) => {
     }
 });
 
-// Get listings for the current user
 app.get('/api/listings/my', async (req, res) => {
     const { userId } = req.query;
     if (!userId) {
@@ -199,8 +180,6 @@ app.get('/api/listings/my', async (req, res) => {
     }
 });
 
-
-// "Purchase" a listing (reveal contact info)
 app.post('/api/listings/:id/purchase', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -215,7 +194,6 @@ app.post('/api/listings/:id/purchase', async (req, res) => {
     }
 });
 
-// Boost a listing
 app.post('/api/listings/:id/boost', async (req, res) => {
     try {
         const listing = await Listing.findByIdAndUpdate(req.params.id, { isBoosted: true }, { new: true });
@@ -225,7 +203,6 @@ app.post('/api/listings/:id/boost', async (req, res) => {
     }
 });
 
-// Mark a listing as sold
 app.post('/api/listings/:id/mark-sold', async (req, res) => {
     try {
         const listing = await Listing.findByIdAndUpdate(req.params.id, { isSold: true }, { new: true });
@@ -235,7 +212,6 @@ app.post('/api/listings/:id/mark-sold', async (req, res) => {
     }
 });
 
-// Get unique event names for Trie autocomplete
 app.get('/api/events', async (req, res) => {
     try {
         const eventNames = await Listing.distinct('eventName', { isSold: false });
@@ -245,7 +221,6 @@ app.get('/api/events', async (req, res) => {
     }
 });
 
-// Get a single user's public info
 app.get('/api/users/:id', async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('username phoneNumbers');
@@ -258,9 +233,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-
-// --- SERVER START ---
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-module.exports = app; // For Vercel deployment
+module.exports = app;
