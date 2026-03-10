@@ -93,6 +93,7 @@ class PriorityQueue {
     isEmpty() {
         return this.heap.length === 0;
     }
+}
 
 app.post('/api/register', async (req, res) => {
     try {
